@@ -81,8 +81,7 @@
                 <div class="login-icon w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 </div>
-                <h1 class="text-3xl font-bold text-white">PERUM TAMAN RAYA</h1>
-                <h1 class="text-3xl font-bold text-white">Kas RT 17</h1>
+                <h1 class="text-3xl font-bold text-white">Kas Management</h1>
             </div>
             <form id="loginForm">
                 <div class="mb-4">
@@ -96,6 +95,10 @@
                 <button type="submit" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
                     Login
                 </button>
+                <button type="button" id="quickLoginBtn" class="w-full mt-4 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-xl transition duration-300 shadow-md">
+                Tanpa Login
+                </button>
+
             </form>
             <div class="text-center mb-8 text-gray-400 text-sm">
             </div>
@@ -104,6 +107,7 @@
             </div>
             <p id="loginMessage" class="text-center mt-4 text-sm text-red-400 hidden"></p>
         </div>
+        
     </div>
 
     <div id="dashboardScreen" class="hidden min-h-screen p-4 lg:p-8">
@@ -161,7 +165,7 @@
             <div id="chartError" class="text-center text-gray-400 mt-4 hidden">Tidak ada data untuk grafik di bulan ini.</div>
         </div>
         
-        <div class="text-center mb-8 text-gray-600 text-sm">
+        <div class="text-center mb-8 text-gray-400 text-sm">
             Made By Nur Djaya Atmaja
         </div>
 
@@ -229,8 +233,8 @@
         // ===============================================
         
         // GANTI INI dengan URL Web Apps Script Anda yang sudah di-deploy sebagai "Anyone"
-        //const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMhgoci8bhJF6uuvXWlLI-pffhQxTZefj7qsPEs60qGnfgUaoS-cSeLR-7gkIunMwy/exec'; 
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyDMCjTzCQik5KWctBRsb8TdHkRk012M3PuyEkdqc0OP1_xdAD8xxgIhjPtfbblsB1S/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6YYM-EiHp8EPmID62QQnMnrQZn5LzdGC8GJU5zWDlZfK5A7CJRlMRSA4B9NzXUEUd/exec'; 
+        
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
                             "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         
@@ -589,6 +593,40 @@
         }
 
         // ===============================================
+    // FUNGSI BARU: QUICK LOGIN
+    // ===============================================
+
+    /**
+     * Mengirim permintaan login tanpa username/password, langsung sebagai 'user'.
+     */
+    function quickLogin() {
+        showLoading(true, "Memproses masuk cepat...");
+        
+        // Data yang dikirim ke doPost, tanpa username/password
+        const data = {
+            action: 'quickLogin', // Aksi baru yang akan dikenali oleh kode.gs
+            role: 'user'          // Langsung tentukan role 'user'
+        };
+
+        google.script.run
+            .withSuccessHandler(function(response) {
+                showLoading(false);
+                if (response.success) {
+                    localStorage.setItem('userRole', response.role);
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('dashboard').classList.remove('hidden');
+                    initDashboard(); // Inisialisasi dashboard
+                } else {
+                    alert('Gagal masuk cepat: ' + response.message);
+                }
+            })
+            .withFailureHandler(function(error) {
+                showLoading(false);
+                alert('Error saat mencoba masuk cepat: ' + error.message);
+            })
+            .doPost(data); // Panggil doPost dengan data 'quickLogin'
+    }    
+        // ===============================================
         // EVENT LISTENERS
         // ===============================================
 
@@ -690,12 +728,12 @@
         document.addEventListener('DOMContentLoaded', () => {
              const today = new Date();
              document.getElementById('transactionDate').value = today.toISOString().substring(0, 10);
+             if (userRole === 'user') {
+                 initializeDashboard();
+             }
+        
         });
 
     </script>
 </body>
-
 </html>
-
-
-
